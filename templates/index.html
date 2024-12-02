@@ -2,11 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Cloud Run App</title>
-    <!-- Link to Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha384-k6RqeWeci5ZR/Lv4MR0sA0FfDOM4fU5u5XXqreQ9ICpDDFVxLR1aI3x6W6d9sl5P" crossorigin="anonymous">
+    <title>Main Project Selection</title>
     <style>
-        /* Your existing styles */
+        /* Basic styling for the landing page */
         body {
             font-family: Arial, sans-serif;
             display: flex;
@@ -14,25 +12,14 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #f9f9f9;
+            background-color: #f4f4f9;
         }
         .container {
-            width: 60%;
+            text-align: center;
             border: 2px solid #ccc;
             padding: 20px;
             background-color: #fff;
             box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
-        }
-        .section {
-            border: 2px solid #800080;
-            padding: 20px;
-            margin-top: 20px;
-            display: none; /* Hidden by default */
-        }
-        .button-group {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
         }
         .button {
             background-color: #006699;
@@ -41,167 +28,20 @@
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 16px;
-            width: 30%;
-            transition: background-color 0.3s, transform 0.3s;
+            font-size: 18px;
+            margin: 10px;
+            transition: background-color 0.3s;
         }
         .button:hover {
             background-color: #005580;
-            transform: translateY(-2px);
-        }
-        .button:active {
-            background-color: #004060;
-            transform: translateY(0);
-        }
-        #questionInput {
-            width: 100%;
-            padding: 10px;
-            font-size: 16px;
-            border: 2px solid #008000;
-            border-radius: 5px;
-            margin-top: 10px;
-        }
-        h2 {
-            text-align: center;
-            color: #333;
-        }
-        h3 {
-            color: #333;
-        }
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        li {
-            padding: 5px;
-            background-color: #e0e0e0;
-            margin: 5px 0;
-            border-radius: 5px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .delete-icon {
-            cursor: pointer;
-            color: red;
-            font-weight: bold;
-            margin-left: auto;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Welcome Soham to GCP KB Demo</h2>
-        <div class="button-group">
-            <button class="button" onclick="showUpload()">Upload Documents</button>
-            <button class="button" onclick="showAskQuestion()">Ask Questions</button>
-            <button class="button" onclick="showBrowseFiles()">Browse the Bucket</button>
-        </div>
-
-        <!-- Upload Section -->
-        <div id="uploadSection" class="section">
-            <h3>Upload File</h3>
-            <form id="uploadForm" enctype="multipart/form-data">
-                <input type="file" id="fileInput">
-                <button type="button" class="button" onclick="uploadFile()">Upload</button>
-            </form>
-        </div>
-
-        <!-- Ask Question Section -->
-        <div id="askQuestionSection" class="section">
-            <h3>Ask a Question</h3>
-            <input type="text" id="questionInput" placeholder="Write your question here">
-            <button class="button" style="width:100%; margin-top:10px;" onclick="askQuestion()">Submit Question</button>
-            <p id="answer"></p>
-        </div>
-
-        <!-- Browse Files Section -->
-        <div id="browseFilesSection" class="section">
-            <h3>Files in Bucket</h3>
-            <ul id="fileList"></ul>
-        </div>
+        <h2>Select a Project</h2>
+        <a href="/knowledge-base"><button class="button">Knowledge Base</button></a>
+        <a href="/summarizer"><button class="button">Summarizer</button></a>
     </div>
-
-    <script>
-        function showUpload() {
-            hideAllSections();
-            document.getElementById('uploadSection').style.display = 'block';
-        }
-
-        function showAskQuestion() {
-            hideAllSections();
-            document.getElementById('askQuestionSection').style.display = 'block';
-        }
-
-        function showBrowseFiles() {
-            hideAllSections();
-            document.getElementById('browseFilesSection').style.display = 'block';
-            browseFiles(); // Load files from bucket when section is shown
-        }
-
-        function hideAllSections() {
-            document.getElementById('uploadSection').style.display = 'none';
-            document.getElementById('askQuestionSection').style.display = 'none';
-            document.getElementById('browseFilesSection').style.display = 'none';
-        }
-
-        async function uploadFile() {
-            const formData = new FormData();
-            const fileInput = document.getElementById('fileInput');
-            formData.append("file", fileInput.files[0]);
-
-            const response = await fetch('/upload', {
-                method: 'POST',
-                body: formData
-            });
-            const result = await response.json();
-            alert(result.message || result.error);
-        }
-
-        async function askQuestion() {
-            const question = document.getElementById('questionInput').value;
-            const response = await fetch('/ask', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ question })
-            });
-            const result = await response.json();
-            document.getElementById('answer').innerText = result.answer || result.error;
-        }
-
-        async function browseFiles() {
-            const response = await fetch('/browse');
-            const files = await response.json();
-            const fileList = document.getElementById('fileList');
-            fileList.innerHTML = '';
-            files.forEach(file => {
-                const li = document.createElement('li');
-                li.innerText = file;
-
-                // Create delete icon with SVG fallback
-                const deleteIcon = document.createElement('span');
-                deleteIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="red" class="bi bi-trash" viewBox="0 0 16 16"> <path d="M5.5 5.5A.5.5 0 0 1 6 5h4a.5.5 0 0 1 .5.5V12a.5.5 0 0 1-.5.5H6a.5.5 0 0 1-.5-.5V5.5zm3.5-.5v7h1V5H9zm-3 0v7h1V5H6zm7-1h-1V3.5a1.5 1.5 0 0 0-1.5-1.5H5A1.5 1.5 0 0 0 3.5 3.5V4H2v1h12V4zm-2 0H5V3.5A.5.5 0 0 1 5.5 3h5a.5.5 0 0 1 .5.5V4z"/> </svg>';
-                deleteIcon.classList.add('delete-icon');
-                deleteIcon.onclick = () => deleteFile(file);
-
-                li.appendChild(deleteIcon);
-                fileList.appendChild(li);
-            });
-        }
-
-
-        async function deleteFile(filename) {
-            const response = await fetch('/delete', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ filename })
-            });
-            const result = await response.json();
-            alert(result.message || result.error);
-
-            // Refresh the file list after deletion
-            browseFiles();
-        }
-    </script>
 </body>
 </html>

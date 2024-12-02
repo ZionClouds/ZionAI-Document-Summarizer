@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Summarizer Project</title>
+    <style>
+        /* Your existing styles */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f9f9f9;
+        }
+        .container {
+            width: 60%;
+            border: 2px solid #ccc;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+        }
+        .section {
+            border: 2px solid #800080;
+            padding: 20px;
+            margin-top: 20px;
+            display: block;
+        }
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .button {
+            background-color: #006699;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 30%;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        .button:hover {
+            background-color: #005580;
+            transform: translateY(-2px);
+        }
+        .button:active {
+            background-color: #004060;
+            transform: translateY(0);
+        }
+        #questionInput {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #008000;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        h3 {
+            color: #333;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            padding: 5px;
+            background-color: #e0e0e0;
+            margin: 5px 0;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .delete-icon {
+            cursor: pointer;
+            color: red;
+            font-weight: bold;
+            margin-left: auto;
+        }
+        #summaryDisplay {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Summarizer Project</h2>
+        
+        <!-- Upload Section -->
+        <h3>Upload a Document</h3>
+        <input type="file" id="fileInput">
+        <button class="button" onclick="uploadFile()">Upload</button>
+
+        <!-- Browse Files Section -->
+        <h3>Files in Bucket</h3>
+        <button class="button" onclick="browseFiles()">Refresh</button>
+        <ul id="fileList" class="file-list"></ul>
+
+        <!-- Summary Display Section -->
+        <h3>Document Summary</h3>
+        <div id="summaryDisplay">Select a file to view its summary.</div>
+    </div>
+
+    <script>
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+
+            const response = await fetch('/upload-summarizer', { method: 'POST', body: formData });
+            const result = await response.json();
+            alert(result.message || result.error);
+            browseFiles();  // Refresh file list after upload
+        }
+
+        async function browseFiles() {
+            const response = await fetch('/browse-summarizer');
+            const files = await response.json();
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = ''; // Clear existing list
+
+            files.forEach(file => {
+                const li = document.createElement('li');
+                li.classList.add('file-item');
+                li.innerText = file;
+
+                const viewSummaryButton = document.createElement('button');
+                viewSummaryButton.innerText = 'View Summary';
+                viewSummaryButton.classList.add('button');
+                viewSummaryButton.onclick = () => fetchSummary(file);
+
+                li.appendChild(viewSummaryButton);
+                fileList.appendChild(li);
+            });
+        }
+
+        async function fetchSummary(filename) {
+            const response = await fetch(`/summary/${filename}`);
+            const result = await response.json();
+            const summaryDisplay = document.getElementById('summaryDisplay');
+            summaryDisplay.innerText = result.summary || "No summary available";
+        }
+    </script>
+</body>
+</html>

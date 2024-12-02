@@ -1,1 +1,1 @@
-# Gen-AI-Knowledge-Base-Demo
+# Gen-AI-Document-Summarizer-Demo

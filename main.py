@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, render_template
-from google.cloud import storage
+from google.cloud import storage, bigquery
 from google.cloud import aiplatform
 import os
 import requests
@@ -9,6 +9,8 @@ from vertexai.language_models import TextEmbeddingInput, TextEmbeddingModel
 from itertools import groupby
 from google.cloud import firestore
 from vertexai.generative_models import GenerativeModel
+from flask import send_from_directory
+from flask_cors import CORS
 
 app = Flask(__name__)
 
@@ -24,6 +26,66 @@ storage_client = storage.Client()
 bucket_name = "zionai-kb-docs-devops-team-nonprod-svc-hw9w-d1082e"#os.environ.get("BUCKET_NAME")
 project_id = "devops-team-nonprod-svc-hw9w" #os.environ.get("PROJECT_ID")
 vertex_endpoint = os.environ.get("VERTEX_ENDPOINT")  # Vertex AI endpoint
+
+# Initialize GCP clients
+bigquery_client = bigquery.Client()
+sum_bucket_name = "zionai-docs-devops-team-nonprod-svc-hw9w-cbd069"
+
+app = Flask(__name__, static_folder='build', template_folder='build')
+CORS(app)  # Enable CORS for cross-origin resource sharing
+
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_frontend(path=''):
+    if path != "" and os.path.exists(f'build/{path}'):
+        return send_from_directory('build', path)
+    else:
+        return send_from_directory('build', 'index.html')
+
+# Route for the main landing page with project selection
+@app.route('/')
+def home():
+    return render_template('index.html')  # Main landing page with project options
+
+# Route for Knowledge Base project page (existing)
+@app.route('/knowledge-base')
+def knowledge_base():
+    return render_template('knowledge_base.html')
+
+# Route for Summarizer project page (new)
+@app.route('/summarizer')
+def summarizer():
+    return render_template('summarizer.html')
+
+# Route to handle file upload in Summarizer
+@app.route('/upload-summarizer', methods=['POST'])
+def upload_file_summarizer():
+    file = request.files['file']
+    if file:
+        blob = storage_client.bucket(sum_bucket_name).blob(file.filename)
+        blob.upload_from_file(file, content_type='application/pdf')
+        return jsonify({"message": "File uploaded successfully"}), 200
+    return jsonify({"error": "No file uploaded"}), 400
+
+# Route to list all files in the bucket for Summarizer
+@app.route('/browse-summarizer', methods=['GET'])
+def browse_files_summarizer():
+    blobs = storage_client.list_blobs(sum_bucket_name)
+    files = [blob.name for blob in blobs]
+    return jsonify(files), 200
+
+# Route to retrieve summary for a specific file in Summarizer
+@app.route('/summary/<filename>', methods=['GET'])
+def get_summary(filename):
+    query = f"""
+    SELECT document_summary FROM `devops-team-nonprod-svc-hw9w.zionai_dataset_cbd069.summaries`
+    WHERE document_path = "gs://zionai-docs-devops-team-nonprod-svc-hw9w-cbd069/{filename}"
+    """
+    query_job = bigquery_client.query(query)
+    results = query_job.result()
+    summary = [row.document_summary for row in results]
+    return jsonify({"summary": summary[0] if summary else "No summary available"}), 200
+
 
 def get_text_embedding(text: str) -> list[float]:
     task = 'RETRIEVAL_DOCUMENT'
@@ -76,10 +138,10 @@ def get_document_text(filename: str, page_number: int) -> str:
     doc = db.collection("documents").document(filename)
     return doc.get().get('pages')[page_number]
 
-@app.route('/')
-def index():
-    # Render the HTML page
-    return render_template('index.html')
+# @app.route('/')
+# def index():
+#     # Render the HTML page
+#     return render_template('index.html')
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -173,6 +235,9 @@ def upload_from_github():
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({"error": "Failed to fetch files from GitHub"}), 500
+
+
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
