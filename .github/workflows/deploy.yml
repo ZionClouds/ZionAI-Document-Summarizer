@@ -1,0 +1,70 @@
+name: Deploy Docker to GCP Cloud Run
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write  # Required for OIDC authentication
+      contents: read
+
+    env:
+      PROJECT_ID: "devops-team-nonprod-svc-hw9w"  # Replace with your GCP project ID
+      REGION: "us-central1"                       # Deployment region
+      SERVICE_NAME: "document-summarizer-app"             # Cloud Run service name
+      CONTAINER_IMAGE: "gcr.io/devops-team-nonprod-svc-hw9w/document-summarizer-app:latest"  # Docker image URL
+      SERVICE_ACCOUNT: "my-service-account@devops-team-nonprod-svc-hw9w.iam.gserviceaccount.com"  # Service account
+
+    steps:
+      # Step 1: Checkout the code
+      - uses: 'actions/checkout@v4'
+
+      # Step 2: Authenticate with GCP
+      - uses: 'google-github-actions/auth@v2'
+        with:
+          workload_identity_provider: "projects/848342910896/locations/global/workloadIdentityPools/github/providers/my-repo"
+          service_account: "my-service-account@devops-team-nonprod-svc-hw9w.iam.gserviceaccount.com"
+
+      # Step 3: Set up gcloud CLI
+      - name: Install gcloud CLI
+        uses: 'google-github-actions/setup-gcloud@v1'
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+
+      # Step 4: Configure Docker authentication for GCP
+      - name: Configure Docker for GCP
+        run: |
+          gcloud auth configure-docker
+
+      # Step 5: Build and push Docker image
+      - name: Build and Push Docker Image
+        run: |
+          docker build --no-cache -t ${{ env.CONTAINER_IMAGE }} .
+          docker push ${{ env.CONTAINER_IMAGE }}
+
+      # Step 6: Deploy to Cloud Run
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ${{ env.SERVICE_NAME }} \
+            --image ${{ env.CONTAINER_IMAGE }} \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --allow-unauthenticated \
+            --service-account ${{ env.SERVICE_ACCOUNT }}
+
+      # Step 7: Verify Deployment
+      - name: Get Cloud Run Service URL
+        run: |
+          gcloud run services describe ${{ env.SERVICE_NAME }} \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --format="value(status.url)"

@@ -81,7 +81,7 @@ const SummarizerProject = () => {
   // Fetch files from the backend
   const fetchFiles = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8080/browse-summarizer');
+      const response = await fetch('/browse-summarizer');
       const data = await response.json();
       setFiles(data || []);
     } catch (error) {
@@ -105,7 +105,7 @@ const SummarizerProject = () => {
     formData.append('file', file);
 
     try {
-      const response = await fetch('http://127.0.0.1:8080/upload-summarizer', {
+      const response = await fetch('/upload-summarizer', {
         method: 'POST',
         body: formData,
       });
@@ -127,7 +127,7 @@ const SummarizerProject = () => {
     setLoadingSummary(true);
     setSelectedSummary('');
     try {
-      const response = await fetch(`http://127.0.0.1:8080/summary/${filename}`);
+      const response = await fetch(`/summary/${filename}`);
       const data = await response.json();
       setSelectedSummary(data.summary || 'No summary available.');
     } catch (error) {

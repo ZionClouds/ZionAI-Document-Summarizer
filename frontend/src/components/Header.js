@@ -74,9 +74,9 @@ const Header = () => {
             onClose={handleMenuClose}
             MenuListProps={{ 'aria-labelledby': 'projects-button' }}
           >
-            <MenuItem onClick={handleMenuClose}><Link to="/project1" style={{ textDecoration: 'none', color: 'black' }}>Project 1</Link></MenuItem>
-            <MenuItem onClick={handleMenuClose}><Link to="/project2" style={{ textDecoration: 'none', color: 'black' }}>Project 2</Link></MenuItem>
-            <MenuItem onClick={handleMenuClose}><Link to="/project3" style={{ textDecoration: 'none', color: 'black' }}>Project 3</Link></MenuItem>
+            <MenuItem onClick={handleMenuClose}><Link to="https://knowledge-base-app-848342910896.us-central1.run.app/" target='_blank' style={{ textDecoration: 'none', color: 'black' }}>Knowledge Base</Link></MenuItem>
+            <MenuItem onClick={handleMenuClose}><Link to="https://zionai-knowledge-assistant.kindpond-7b48492d.eastus.azurecontainerapps.io/" target='_blank' style={{ textDecoration: 'none', color: 'black' }}>Knowledge Assistant</Link></MenuItem>
+            <MenuItem onClick={handleMenuClose}><Link to="https://zionai-web-app-848342910896.us-central1.run.app/" target='_blank' style={{ textDecoration: 'none', color: 'black' }}>Zion UI</Link></MenuItem>
           </Menu>
           <Button color="inherit" sx={{ mx: 1 }}>
             <Link to="/about" style={{ textDecoration: 'none', color: 'white' }}>About Us</Link>
