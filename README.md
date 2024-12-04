@@ -10,7 +10,7 @@ Summarize large volumes of documents using Zion AI capabilities.
 The Zion AI Document Summarization project demonstrates an end-to-end process for summarizing a corpus of documents. The workflow includes raw document ingestion, text detection, and on-demand summarization using cutting-edge Zion AI services, such as AI Text Processing, Document AI OCR, and BigQuery for storage.
 
 <!-- ## Click Deploy -->
-<a href="https://deploy-new-project-848342910896.us-central1.run.app?project_name=ZionAI-Document-Summarizer" target="_blank">
+<a href="https://deploy-new-project-848342910896.us-central1.run.app?project_name=ZionAI-Document-Summarizer&workflow=deploy.yml" target="_blank">
   <img src="https://img.shields.io/badge/Deploy-Solution-brightgreen" alt="Deploy Solution">
 </a>
 
